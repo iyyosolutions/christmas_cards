@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hearth & Holly
 
-## Getting Started
+A Christmas card studio. People create an account, pick a design, write a wish, and share it by link, WhatsApp, or email.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Next.js App Router, TypeScript, Tailwind CSS, Framer Motion, Supabase Auth and Postgres, Supabase Storage, html-to-image, and Resend.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Copy `.env.example` to `.env.local` and fill in the keys.
+2. In Supabase, enable email and password auth, and turn on email confirmation.
+3. Add `http://localhost:3000/auth/callback` (and your Vercel URL) to the Auth redirect allow list. The same callback handles email verification and password resets.
+4. Run `supabase/schema.sql` in the SQL editor. It creates `profiles`, `templates`, `cards`, and `card_shares`, with foreign keys, indexes, row level security, a signup trigger, and the storage buckets. It also seeds the twelve card designs.
+5. Promote your account after you register: `update public.profiles set is_admin = true where email = 'you@example.com';` Only that account can open `/admin`.
+6. In Resend, verify a sending domain and set `RESEND_FROM_EMAIL`.
+7. `npm run dev`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The app uses the Supabase anon key. Do not add the service-role key. Card creation is limited to 8 an hour per account, and email sending to 10 an hour. Card images must be PNG files under 4 MB. Template previews must be PNG, JPG, or WebP under 2 MB.
 
-## Learn More
+The home page works before the keys are added. The gallery, saving a card, sign-in, and email need Supabase. Email also needs Resend.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Connect the repository to Vercel and set the same environment variables. Point `NEXT_PUBLIC_SITE_URL` at the production domain, and add that domain’s `/auth/callback` URL in Supabase.
