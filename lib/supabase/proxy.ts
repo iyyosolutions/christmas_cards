@@ -36,7 +36,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/create") ||
     path.startsWith("/profile") ||
     path.startsWith("/reset-password") ||
-    path.startsWith("/share");
+    path.startsWith("/share") ||
+    path.startsWith("/edit");
 
   if (path.startsWith("/admin")) {
     if (!user) {

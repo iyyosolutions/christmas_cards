@@ -10,7 +10,7 @@ type CardRow = {
   message: string;
   sender_name: string;
   card_image_url: string | null;
-  design_options: { design?: string; textColor?: string; fontStyle?: string; textAlign?: string } | null;
+  design_options: { design?: string; textColor?: string; fontStyle?: string; textAlign?: string; wishes?: { message: string; senderName: string }[]; attachment?: string | null } | null;
   is_public: boolean;
 };
 
@@ -57,10 +57,12 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
       senderName={card.sender_name}
       recipientName={card.recipient_name}
       draft={{
-        templateId: options.design ?? "holly-ribbon",
+        templateId: options.design ?? "warm-bench",
         recipientName: card.recipient_name ?? "",
         message: card.message,
         senderName: card.sender_name,
+        wishes: Array.isArray(options.wishes) ? options.wishes : undefined,
+        photoUrl: typeof options.attachment === "string" ? options.attachment : undefined,
         style: {
           textColor: options.textColor,
           fontStyle: options.fontStyle === "sans" || options.fontStyle === "script" ? options.fontStyle : "serif",

@@ -62,7 +62,7 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) return { error: error.message };
-  if (data.session) redirect("/cards");
+  if (data.session) redirect("/templates");
   return {
     message: "Check your inbox and open the verification link. You can sign in after your email is confirmed.",
   };
@@ -86,8 +86,8 @@ export async function signIn(formData: FormData) {
   });
   if (error) return { error: error.message };
 
-  const next = String(formData.get("next") || "/cards");
-  redirect(next.startsWith("/") ? next : "/cards");
+  const next = String(formData.get("next") || "/templates");
+  redirect(next.startsWith("/") ? next : "/templates");
 }
 
 export async function requestPasswordReset(formData: FormData) {
@@ -135,5 +135,5 @@ export async function updatePassword(formData: FormData) {
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { error: error.message };
-  redirect("/cards");
+  redirect("/templates");
 }

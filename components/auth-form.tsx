@@ -8,7 +8,7 @@ import { Input, Label } from "@/components/ui/field";
 
 export function AuthForm({
   mode,
-  nextPath = "/cards",
+  nextPath = "/templates",
 }: {
   mode: "signin" | "signup";
   nextPath?: string;

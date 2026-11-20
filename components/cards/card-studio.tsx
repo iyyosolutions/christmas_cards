@@ -4,11 +4,12 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveCard } from "@/app/actions/cards";
 import { GreetingCard } from "@/components/cards/greeting-card";
+import { OpeningCard } from "@/components/cards/opening-card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
 import type { CardStyle } from "@/lib/types";
 import type { Template } from "@/lib/templates";
-import { coloursFor, MESSAGE_LIMIT, wishes, wishCategories, type WishCategory } from "@/lib/wishes";
+import { coloursFor, MESSAGE_LIMIT, wishes as wishList, wishCategories, type WishCategory } from "@/lib/wishes";
 import { cn } from "@/lib/utils";
 
 type PreviewMode = "desktop" | "mobile" | "front";
@@ -28,6 +29,8 @@ export function CardStudio({
   const [recipientName, setRecipientName] = useState("");
   const [message, setMessage] = useState("");
   const [sender, setSender] = useState(senderName);
+  const [wishes, setWishes] = useState([{ message: "", senderName }]);
+  const [activeWish, setActiveWish] = useState(0);
   const [category, setCategory] = useState<WishCategory>("Heartfelt");
   const [style, setStyle] = useState<CardStyle>({
     textColor: coloursFor(designId)[0].value,
@@ -39,11 +42,15 @@ export function CardStudio({
   const [pending, setPending] = useState(false);
 
   const colours = coloursFor(designId);
+  const personalWishes = wishes
+    .map((wish) => ({ message: wish.message.trim(), senderName: wish.senderName.trim() }))
+    .filter((wish) => wish.message);
   const draft = {
     templateId: designId,
     recipientName: mode === "personal" ? recipientName : "",
-    message,
-    senderName: sender,
+    message: mode === "personal" ? personalWishes.map((wish) => wish.message).join("\n\n") : message,
+    senderName: mode === "personal" ? personalWishes[0]?.senderName || sender : sender,
+    wishes: mode === "personal" ? personalWishes : undefined,
     style,
   };
 
@@ -52,12 +59,20 @@ export function CardStudio({
   }
 
   async function onGenerate() {
-    if (message.trim().length < 8) {
+    if (mode === "general" && message.trim().length < 8) {
       setError("Write a slightly longer wish.");
       return;
     }
     if (mode === "personal" && recipientName.trim().length < 1) {
       setError("Add the recipient's name, or switch to a general wish.");
+      return;
+    }
+    if (mode === "personal" && personalWishes.some((wish) => wish.message.length < 8)) {
+      setError("Each wish needs a few more words.");
+      return;
+    }
+    if (mode === "personal" && personalWishes.length < 1) {
+      setError("Add at least one wish.");
       return;
     }
     setPending(true);
@@ -109,18 +124,59 @@ export function CardStudio({
                 <Label htmlFor="recipient">Recipient&apos;s name</Label>
                 <Input id="recipient" value={recipientName} maxLength={40} onChange={(event) => setRecipientName(event.target.value)} />
               </div>
-              <div>
-                <Label htmlFor="sender">Sender&apos;s name, if you want one</Label>
-                <Input id="sender" value={sender} maxLength={40} onChange={(event) => setSender(event.target.value)} />
-              </div>
             </div>
           )}
         </fieldset>
 
+        {mode === "personal" ? (
+          <div className="space-y-6">
+            {wishes.map((wish, index) => (
+              <div key={index} className="space-y-3 rounded-2xl border border-ink/10 bg-cream/60 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-[0.16em] text-pine/70">Wish {index + 1}</p>
+                  {wishes.length > 1 && (
+                    <button type="button" className="text-xs text-berry" onClick={() => setWishes((current) => current.filter((_, item) => item !== index))}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor={`from-${index}`}>From</Label>
+                  <Input
+                    id={`from-${index}`}
+                    value={wish.senderName}
+                    maxLength={40}
+                    onChange={(event) => setWishes((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, senderName: event.target.value } : item))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`wish-${index}`}>Christmas wish</Label>
+                  <Textarea
+                    id={`wish-${index}`}
+                    value={wish.message}
+                    maxLength={MESSAGE_LIMIT}
+                    placeholder="Write this person's wish."
+                    onFocus={() => setActiveWish(index)}
+                    onChange={(event) => setWishes((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, message: event.target.value } : item))}
+                  />
+                  <p className="mt-1 text-right text-xs text-ink/50">{wish.message.length}/{MESSAGE_LIMIT}</p>
+                </div>
+              </div>
+            ))}
+            {wishes.length < 8 && (
+              <Button type="button" variant="outline" onClick={() => setWishes((current) => [...current, { message: "", senderName: "" }])}>
+                Add another person&apos;s wish
+              </Button>
+            )}
+          </div>
+        ) : (
         <div>
           <Label htmlFor="message">Your Christmas wish</Label>
           <Textarea id="message" value={message} maxLength={MESSAGE_LIMIT} onChange={(event) => setMessage(event.target.value)} placeholder="Write your own, or choose a suggestion below." />
           <p className="mt-1 text-right text-xs text-ink/50">{message.length}/{MESSAGE_LIMIT}</p>
+        </div>
+        )}
+        <div>
           <div className="mt-3 flex flex-wrap gap-2">
             {wishCategories.map((item) => (
               <button key={item} type="button" onClick={() => setCategory(item)} className={cn("rounded-full border px-3 py-1 text-xs", category === item ? "border-pine bg-pine text-cream" : "border-ink/10 bg-cream")}>
@@ -129,8 +185,15 @@ export function CardStudio({
             ))}
           </div>
           <div className="mt-3 space-y-2">
-            {wishes.filter((wish) => wish.category === category).map((wish) => (
-              <button key={wish.text} type="button" onClick={() => setMessage(wish.text.slice(0, MESSAGE_LIMIT))} className="block w-full rounded-2xl border border-ink/10 bg-cream px-4 py-3 text-left text-sm text-ink/80 hover:border-gold">
+            {wishList.filter((wish) => wish.category === category).map((wish) => (
+              <button key={wish.text} type="button" onClick={() => {
+                const text = wish.text.slice(0, MESSAGE_LIMIT);
+                if (mode === "personal") {
+                  setWishes((current) => current.map((item, index) => index === activeWish ? { ...item, message: text } : item));
+                } else {
+                  setMessage(text);
+                }
+              }} className="block w-full rounded-2xl border border-ink/10 bg-cream px-4 py-3 text-left text-sm text-ink/80 hover:border-gold">
                 {wish.text}
               </button>
             ))}
@@ -174,13 +237,13 @@ export function CardStudio({
         </div>
         <div className={cn("mx-auto flex justify-center", preview === "mobile" && "w-[280px] rounded-[36px] border-8 border-pine-deep bg-pine-deep p-2")}>
           <div className={cn("w-full", preview === "mobile" ? "max-w-[250px]" : preview === "desktop" ? "max-w-[360px]" : "max-w-[420px]")}>
-            <GreetingCard draft={draft} />
+            <OpeningCard draft={draft} auto />
           </div>
         </div>
         <div ref={cardRef} className="pointer-events-none fixed top-0 left-[-2000px] w-[480px]" aria-hidden>
           <GreetingCard draft={draft} />
         </div>
-        <p className="mt-3 text-center text-xs text-ink/50">Front of the card. The illustration does not move.</p>
+        <p className="mt-3 text-center text-xs text-ink/50">Click the card to open it. The saved image stays flat.</p>
       </div>
     </div>
   );

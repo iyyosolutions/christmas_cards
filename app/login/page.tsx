@@ -18,7 +18,7 @@ export default async function LoginPage({
           <p className="mt-4 text-sm text-berry">That confirmation link could not be completed. Request a new one by signing up again, or try signing in.</p>
         )}
       </div>
-      <AuthForm mode="signin" nextPath={params.next || "/cards"} />
+      <AuthForm mode="signin" nextPath={params.next || "/templates"} />
     </div>
   );
 }

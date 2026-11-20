@@ -9,7 +9,6 @@ export function ShareDesk({
   slug,
   senderName,
   recipientName,
-  imageUrl,
 }: {
   slug: string;
   senderName: string;
@@ -32,11 +31,17 @@ export function ShareDesk({
     setNote("Link copied.");
   }
 
-  function whatsapp() {
-    const url = `${window.location.origin}/card/${slug}`;
+  function shareUrl() {
+    return `${window.location.origin}/card/${slug}`;
+  }
+
+  function shareText() {
     const who = recipientName ? ` for ${recipientName}` : "";
-    const text = encodeURIComponent(`A Christmas card${who}, from ${senderName}: ${url}`);
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+    return `A Christmas card${who}, from ${senderName}`;
+  }
+
+  function openShare(href: string) {
+    window.open(href, "_blank", "noopener,noreferrer");
   }
 
   async function emailCard() {
@@ -47,32 +52,20 @@ export function ShareDesk({
     setNote(result.error ?? "Sent. They can open the card without an account.");
   }
 
-  async function download() {
-    if (!imageUrl) {
-      setNote("The image is not available yet.");
-      return;
-    }
-    const response = await fetch(imageUrl);
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "christmas-card.png";
-    anchor.click();
-    URL.revokeObjectURL(url);
-  }
-
   return (
-    <div className="space-y-4 rounded-[28px] border border-ink/10 bg-cream/90 p-5">
+    <div className="space-y-4 rounded-[28px] border border-ink/10 bg-cream/90 p-3 sm:p-5">
       <p className="break-all text-sm text-ink/70">{publicLink}</p>
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={whatsapp}>WhatsApp</Button>
-        <Button type="button" variant="outline" size="sm" onClick={copy}>Copy Link</Button>
-        <Button type="button" variant="outline" size="sm" onClick={download}>Download PNG</Button>
+      <div className="grid grid-cols-2 gap-2 [&>button]:w-full sm:flex sm:flex-wrap sm:[&>button]:w-auto">
+        <Button type="button" variant="outline" size="sm" onClick={() => openShare(`https://wa.me/?text=${encodeURIComponent(`${shareText()}: ${shareUrl()}`)}`)}>WhatsApp</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => openShare(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl())}`)}>Facebook</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => openShare(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent(shareUrl())}`)}>X</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => openShare(`https://t.me/share/url?url=${encodeURIComponent(shareUrl())}&text=${encodeURIComponent(shareText())}`)}>Telegram</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => openShare(`mailto:?subject=${encodeURIComponent(shareText())}&body=${encodeURIComponent(shareUrl())}`)}>Email</Button>
+        <Button type="button" variant="outline" size="sm" onClick={copy}>Copy link</Button>
       </div>
       <div>
         <Label htmlFor="to">Email the card</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input id="to" type="email" value={email} placeholder="their@email.com" onChange={(event) => setEmail(event.target.value)} />
           <Button type="button" variant="berry" onClick={emailCard} disabled={pending || !email}>Send</Button>
         </div>

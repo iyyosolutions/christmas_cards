@@ -1,4 +1,4 @@
--- Hearth & Holly schema. Run in the Supabase SQL editor.
+-- Send A Wish schema. Run in the Supabase SQL editor.
 -- Uses the anon key only. Do not put the service-role key in the app.
 
 create table if not exists public.profiles (

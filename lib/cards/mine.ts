@@ -10,7 +10,7 @@ export async function loadMyCards() {
 
   const { data } = await supabase
     .from("cards")
-    .select("id, user_id, template_id, recipient_name, message, sender_name, share_token, card_image_url, created_at")
+    .select("id, user_id, template_id, recipient_name, message, sender_name, share_token, card_image_url, design_options, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 

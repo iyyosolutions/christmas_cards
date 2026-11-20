@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { handFont } from "@/lib/fonts";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -34,48 +34,33 @@ export function SiteHeader() {
     const supabase = createClient();
     await supabase.auth.signOut();
     setEmail(null);
-    router.push("/");
+    router.push("/templates");
     router.refresh();
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-pine-deep/95 text-cream backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-        <Link href="/" className="font-serif text-2xl tracking-tight">
-          Hearth & Holly
-        </Link>
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/templates" className="rounded-full px-3 py-2 text-cream/80 hover:text-cream">
-            Templates
-          </Link>
-          {email ? (
-            <>
-              <Link href="/cards" className="rounded-full px-3 py-2 text-cream/80 hover:text-cream">
-                My cards
-              </Link>
-              {admin && (
-                <Link href="/admin" className="rounded-full px-3 py-2 text-gold hover:text-cream">
-                  Admin
-                </Link>
-              )}
-              <Button variant="gold" size="sm" onClick={signOut}>
-                Sign out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="rounded-full px-3 py-2 text-cream/80 hover:text-cream">
-                Sign in
-              </Link>
-              <Link href="/signup">
-                <Button variant="gold" size="sm">
-                  Create account
-                </Button>
-              </Link>
-            </>
-          )}
-        </nav>
-      </div>
+    <header className="relative z-20 px-4 pb-2 pt-10 text-ink sm:px-10 sm:pt-12">
+      <nav className="mb-5 flex flex-wrap items-center gap-3 sm:absolute sm:right-8 sm:top-8 sm:mb-0">
+        <Link href="/templates" className={`${handFont.className} -rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Designs</Link>
+        {email ? (
+          <>
+            <Link href="/cards" className={`${handFont.className} rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Cards</Link>
+            {admin && <Link href="/admin" className={`${handFont.className} -rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Admin</Link>}
+            <button type="button" className={`${handFont.className} rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`} onClick={signOut}>Out</button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className={`${handFont.className} rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Sign in</Link>
+            <Link href="/signup" className={`${handFont.className} rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Join</Link>
+          </>
+        )}
+      </nav>
+      <Link href="/templates" className="display block text-5xl leading-[0.82] text-[#7eb8b2] sm:text-7xl">
+        Send
+        <br />
+        a wish
+      </Link>
+      <p className="mt-2 text-[11px] uppercase tracking-[0.32em] text-ink/45">Christmas cards</p>
     </header>
   );
 }

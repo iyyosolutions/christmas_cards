@@ -14,16 +14,27 @@ const cardSchema = z
     templateId: z.string().min(1),
     wishMode: z.enum(["general", "personal"]),
     recipientName: z.string().trim().max(40),
-    message: z.string().trim().min(8, "Write a slightly longer wish.").max(240),
+    message: z.string().trim().max(2000),
     senderName: z.string().trim().max(40),
+    wishes: z.array(z.object({
+      message: z.string().trim().min(1, "Write the wish.").max(240),
+      senderName: z.string().trim().max(40),
+    })).max(8).optional(),
     textColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
     fontStyle: z.enum(["serif", "sans", "script"]),
     textAlign: z.enum(["left", "center"]),
     imageDataUrl: z.string().startsWith("data:image/png;base64,"),
+    photoDataUrl: z.string().optional(),
   })
   .superRefine((value, context) => {
     if (value.wishMode === "personal" && value.recipientName.length < 1) {
       context.addIssue({ code: "custom", message: "Add the recipient's name.", path: ["recipientName"] });
+    }
+    if (value.wishMode === "general" && value.message.trim().length < 1) {
+      context.addIssue({ code: "custom", message: "Write the wish.", path: ["message"] });
+    }
+    if (value.wishMode === "personal" && (!value.wishes || value.wishes.length < 1)) {
+      context.addIssue({ code: "custom", message: "Add at least one wish.", path: ["wishes"] });
     }
   });
 
@@ -33,6 +44,8 @@ export async function saveCard(input: {
   recipientName: string;
   message: string;
   senderName: string;
+  wishes?: { message: string; senderName: string }[];
+  photoDataUrl?: string;
   style?: { textColor?: string; fontStyle?: "serif" | "sans" | "script"; textAlign?: "left" | "center" };
   imageDataUrl?: string;
 }) {
@@ -80,6 +93,8 @@ export async function saveCard(input: {
     .upload(imagePath, bytes, { contentType: "image/png", upsert: false });
   if (uploadError) return { error: uploadError.message };
   const cardImageUrl = supabase.storage.from("card-images").getPublicUrl(imagePath).data.publicUrl;
+  const attachment = await storeAttachment(supabase, user.id, token, parsed.data.photoDataUrl);
+  if (attachment.error) return { error: attachment.error };
 
   const { data, error } = await supabase
     .from("cards")
@@ -87,8 +102,12 @@ export async function saveCard(input: {
       user_id: user.id,
       template_id: template.id,
       recipient_name: parsed.data.wishMode === "personal" ? parsed.data.recipientName : null,
-      message: parsed.data.message,
-      sender_name: parsed.data.senderName || "With love",
+      message: parsed.data.wishMode === "personal"
+        ? (parsed.data.wishes ?? []).map((wish) => wish.message).join("\n\n")
+        : parsed.data.message,
+      sender_name: parsed.data.wishMode === "personal"
+        ? parsed.data.wishes?.[0]?.senderName || "With love"
+        : parsed.data.senderName || "With love",
       card_image_url: cardImageUrl,
       share_token: token,
       is_public: true,
@@ -98,6 +117,8 @@ export async function saveCard(input: {
         fontStyle: parsed.data.fontStyle,
         textAlign: parsed.data.textAlign,
         design,
+        wishes: parsed.data.wishMode === "personal" ? parsed.data.wishes ?? [] : [],
+        attachment: attachment.url,
       },
     })
     .select("share_token")
@@ -107,6 +128,89 @@ export async function saveCard(input: {
   revalidatePath("/cards");
   revalidatePath("/dashboard");
   return { slug: data.share_token as string };
+}
+
+export async function updateCard(id: string, input: {
+  templateId: string;
+  wishMode: "general" | "personal";
+  recipientName: string;
+  message: string;
+  senderName: string;
+  wishes?: { message: string; senderName: string }[];
+  photoDataUrl?: string;
+  style?: { textColor?: string; fontStyle?: "serif" | "sans" | "script"; textAlign?: "left" | "center" };
+  imageDataUrl?: string;
+}) {
+  if (!isSupabaseConfigured()) return { error: "Connect Supabase before saving cards." };
+  const parsed = cardSchema.safeParse({
+    ...input,
+    textColor: input.style?.textColor,
+    fontStyle: input.style?.fontStyle ?? "serif",
+    textAlign: input.style?.textAlign ?? "left",
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the card." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to edit a card." };
+
+  const { data: existing } = await supabase
+    .from("cards")
+    .select("id, share_token")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!existing) return { error: "That card could not be found." };
+
+  const lookup = supabase.from("templates").select("id, is_active, template_config").eq("is_active", true);
+  const { data: template } = designIds.includes(parsed.data.templateId)
+    ? await lookup.contains("template_config", { design: parsed.data.templateId }).maybeSingle()
+    : await lookup.eq("id", parsed.data.templateId).maybeSingle();
+  const design = template?.template_config?.design;
+  if (!template?.is_active || typeof design !== "string" || !designIds.includes(design)) {
+    return { error: "That template is not available." };
+  }
+
+  const base64 = parsed.data.imageDataUrl.split(",")[1];
+  const bytes = Buffer.from(base64, "base64");
+  if (bytes.length > 4_000_000) return { error: "The card image is too large." };
+  const imagePath = `${user.id}/${existing.share_token}.png`;
+  const { error: uploadError } = await supabase.storage
+    .from("card-images")
+    .upload(imagePath, bytes, { contentType: "image/png", upsert: true });
+  if (uploadError) return { error: uploadError.message };
+  const cardImageUrl = supabase.storage.from("card-images").getPublicUrl(imagePath).data.publicUrl;
+  const attachment = await storeAttachment(supabase, user.id, existing.share_token, parsed.data.photoDataUrl);
+  if (attachment.error) return { error: attachment.error };
+
+  const { error } = await supabase
+    .from("cards")
+    .update({
+      template_id: template.id,
+      recipient_name: parsed.data.wishMode === "personal" ? parsed.data.recipientName : null,
+      message: parsed.data.wishMode === "personal"
+        ? (parsed.data.wishes ?? []).map((wish) => wish.message).join("\n\n")
+        : parsed.data.message,
+      sender_name: parsed.data.wishMode === "personal"
+        ? parsed.data.wishes?.[0]?.senderName || "With love"
+        : parsed.data.senderName || "With love",
+      card_image_url: cardImageUrl,
+      design_options: {
+        wishMode: parsed.data.wishMode,
+        textColor: parsed.data.textColor ?? null,
+        fontStyle: parsed.data.fontStyle,
+        textAlign: parsed.data.textAlign,
+        design,
+        wishes: parsed.data.wishMode === "personal" ? parsed.data.wishes ?? [] : [],
+        attachment: attachment.url,
+      },
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (error) return { error: error.message };
+  revalidatePath("/cards");
+  revalidatePath(`/card/${existing.share_token}`);
+  return { slug: existing.share_token as string };
 }
 
 export async function deleteCard(id: string) {
@@ -161,7 +265,7 @@ export async function sendCardEmail(input: { slug: string; to: string }) {
   const link = cardUrl(card.share_token);
   const recipient = escapeHtml(card.recipient_name ?? "");
   const sender = escapeHtml(card.sender_name);
-  const greeting = recipient ? `Dear ${recipient},` : "For you,";
+  const greeting = recipient ? `Dear ${recipient},` : "";
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL!,
@@ -169,7 +273,7 @@ export async function sendCardEmail(input: { slug: string; to: string }) {
     subject: `${card.sender_name} sent you a Christmas card`,
     html: `
       <div style="margin:0;background:#143028;padding:32px;font-family:Georgia,serif;color:#f8f1df;">
-        <p style="letter-spacing:0.28em;text-transform:uppercase;font-size:12px;color:#e7d3a1;">Hearth &amp; Holly</p>
+        <p style="letter-spacing:0.28em;text-transform:uppercase;font-size:12px;color:#e7d3a1;">Send A Wish</p>
         <div style="margin-top:16px;background:#fbf7ef;color:#241c16;border-radius:24px;padding:32px;">
           <h1 style="font-weight:normal;font-size:32px;margin:0;">${greeting}</h1>
           <p style="font-size:18px;line-height:1.6;">${sender} wrote a Christmas card and asked us to bring it to you.</p>
@@ -198,6 +302,28 @@ export async function sendCardEmail(input: { slug: string; to: string }) {
     delivery_status: "sent",
   });
   return { ok: true };
+}
+
+async function storeAttachment(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  token: string,
+  photo?: string,
+) {
+  if (!photo) return { url: null as string | null };
+  if (photo.startsWith("http")) return { url: photo };
+  const match = photo.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+  if (!match) return { error: "Use a PNG, JPG, or WebP image." };
+  const bytes = Buffer.from(match[2], "base64");
+  if (bytes.length > 2_000_000) return { error: "The attached image must be under 2 MB." };
+  const ext = match[1] === "jpeg" || match[1] === "jpg" ? "jpg" : match[1];
+  const path = `${userId}/${token}-photo.${ext}`;
+  const { error } = await supabase.storage.from("card-images").upload(path, bytes, {
+    contentType: ext === "jpg" ? "image/jpeg" : `image/${ext}`,
+    upsert: true,
+  });
+  if (error) return { error: error.message };
+  return { url: supabase.storage.from("card-images").getPublicUrl(path).data.publicUrl };
 }
 
 function escapeHtml(value: string) {

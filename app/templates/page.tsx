@@ -9,9 +9,10 @@ const designed: GalleryTemplate[] = designedTemplates.map((template) => ({
 }));
 
 export default async function TemplatesPage() {
-  if (!isSupabaseConfigured()) return <TemplateGallery templates={designed} />;
+  if (!isSupabaseConfigured()) return <TemplateGallery templates={designed} signedIn={false} />;
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { data } = await supabase
     .from("templates")
     .select("id, name, category, description, template_config")
@@ -31,5 +32,8 @@ export default async function TemplatesPage() {
     }];
   });
 
-  return <TemplateGallery templates={fromDatabase.length > 0 ? fromDatabase : designed} />;
+  const seen = new Set(fromDatabase.map((template) => template.design));
+  const templates = [...fromDatabase, ...designed.filter((template) => !seen.has(template.design))];
+
+  return <TemplateGallery templates={templates} signedIn={Boolean(user)} />;
 }

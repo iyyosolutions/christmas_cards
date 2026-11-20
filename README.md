@@ -1,4 +1,4 @@
-# Hearth & Holly
+# Send A Wish
 
 A Christmas card studio. People create an account, pick a design, write a wish, and share it by link, WhatsApp, or email.
 

@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f6f0;
-  --foreground: #1c1612;
-  --pine: #123d2b;
-  --pine-deep: #0c281c;
-  --gold: #d4af65;
-  --gold-soft: #e7d3a1;
-  --berry: #c62828;
-  --cream: #fff9f0;
-  --ink: #241c16;
-  --line: rgba(36, 28, 22, 0.12);
+  --background: #3d4450;
+  --foreground: #2a2622;
+  --pine: #6fbfb6;
+  --pine-deep: #2f6f68;
+  --gold: #d7c4a3;
+  --gold-soft: #efe4d2;
+  --berry: #c45b58;
+  --cream: #f7f3ea;
+  --ink: #2c2824;
+  --line: rgba(44, 40, 36, 0.16);
+  --tape: #8fd0c8;
+  --paper: #f4efe4;
 }
 
 @theme inline {
@@ -25,6 +27,7 @@
   --color-ink: var(--ink);
   --font-sans: var(--font-outfit);
   --font-serif: var(--font-cormorant);
+  --font-display: var(--font-oswald);
 }
 
 * {
@@ -37,12 +40,10 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(1200px 500px at 10% -10%, rgba(198, 161, 91, 0.18), transparent 55%),
-    radial-gradient(900px 420px at 100% 0%, rgba(141, 44, 59, 0.08), transparent 50%),
-    var(--background);
+  background: #3a4150;
   color: var(--foreground);
   font-family: var(--font-outfit), "Segoe UI", sans-serif;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -50,9 +51,31 @@ body {
   color: #1c1612;
 }
 
-.paper-grid {
+.notebook {
+  background-color: #efe6d6;
   background-image:
-    linear-gradient(rgba(20, 48, 40, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 48, 40, 0.04) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(rgba(120, 110, 90, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 110, 90, 0.13) 1px, transparent 1px);
+  background-size: 26px 26px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.28);
+}
+
+.hand {
+  font-family: var(--font-hand), cursive;
+}
+
+.display {
+  font-family: var(--font-oswald), sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.tape {
+  background: var(--tape);
+  box-shadow: 0 6px 10px rgba(70, 90, 80, 0.15);
+}
+
+.paper-sheet {
+  background: #fbf8f2;
+  box-shadow: 0 10px 24px rgba(60, 48, 30, 0.12);
 }

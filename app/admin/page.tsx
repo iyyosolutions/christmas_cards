@@ -44,7 +44,7 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
       <p className="text-xs uppercase tracking-[0.24em] text-berry">Admin</p>
-      <h1 className="mt-2 font-serif text-5xl text-pine-deep">Everyone on Hearth & Holly</h1>
+      <h1 className="mt-2 font-serif text-5xl text-pine-deep">Everyone on Send A Wish</h1>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map(([label, value]) => (
           <article key={label} className="rounded-3xl border border-ink/10 bg-cream px-5 py-4">

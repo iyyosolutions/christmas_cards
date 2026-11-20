@@ -18,10 +18,10 @@ export default async function CardsPage() {
   const { name, cards } = await loadMyCards();
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-serif text-5xl text-pine-deep">Welcome back, {name}.</h1>
-        <Link href="/templates" className={cn(buttonVariants({ size: "lg" }))}>
+        <h1 className="display text-4xl leading-none text-[#7eb8b2] sm:text-5xl">{name}</h1>
+        <Link href="/templates" className={cn(buttonVariants({ size: "sm" }), "sm:h-12 sm:px-6 sm:text-sm")}>
           Quick Create Card
         </Link>
       </div>
