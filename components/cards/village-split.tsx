@@ -1,5 +1,6 @@
 "use client";
 
+import { signOff } from "@/lib/sign-off";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { WishSteps } from "@/components/cards/wish-steps";
@@ -21,7 +22,7 @@ export function VillageSplit({ draft }: { draft: CardDraft }) {
   const greeting = draft.recipientName.trim() ? `Dear ${draft.recipientName.trim()},` : "";
   const wishes = (draft.wishes ?? []).filter((wish) => wish.message.trim());
   const message = draft.message.trim() || "A Christmas wish, written just for you.";
-  const sender = draft.senderName.trim() || "With love";
+  const sender = signOff(draft.senderName);
   const flakes = Array.from({ length: 18 }, (_, index) => ({
     left: `${(index * 17) % 100}%`,
     size: 4 + (index % 4) * 2,

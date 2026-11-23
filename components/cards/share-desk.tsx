@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { signOff } from "@/lib/sign-off";
 
 export function ShareDesk({
   slug,
@@ -27,7 +28,8 @@ export function ShareDesk({
 
   function shareText() {
     const who = recipientName ? ` for ${recipientName}` : "";
-    return `A Christmas card${who}, from ${senderName}`;
+    const from = signOff(senderName);
+    return from === "Made with love" ? `A Christmas card${who}, made with love` : `A Christmas card${who}, from ${from}`;
   }
 
   function openShare(href: string) {

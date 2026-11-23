@@ -1,5 +1,6 @@
 "use client";
 
+import { signOff } from "@/lib/sign-off";
 import { useEffect, useState } from "react";
 import { GreetingCard } from "@/components/cards/greeting-card";
 import { WishSteps } from "@/components/cards/wish-steps";
@@ -25,7 +26,7 @@ export function OpeningCard({
   const greeting = draft.recipientName.trim() ? `Dear ${draft.recipientName.trim()},` : "";
   const wishes = (draft.wishes ?? []).filter((wish) => wish.message.trim());
   const message = draft.message.trim() || "A Christmas wish, written just for you.";
-  const sender = draft.senderName.trim() || "With love";
+  const sender = signOff(draft.senderName);
   const font =
     draft.style?.fontStyle === "sans" ? "font-sans" : draft.style?.fontStyle === "script" ? "[font-family:var(--font-script)]" : "font-serif";
   const align = draft.style?.textAlign === "center" ? "text-center" : "text-left";

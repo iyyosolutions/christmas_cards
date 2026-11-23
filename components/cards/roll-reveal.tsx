@@ -1,5 +1,6 @@
 "use client";
 
+import { signOff } from "@/lib/sign-off";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GreetingCard } from "@/components/cards/greeting-card";
@@ -35,7 +36,7 @@ export function RollReveal({ draft }: { draft: CardDraft }) {
   const greeting = draft.recipientName.trim() ? `Dear ${draft.recipientName.trim()},` : "";
   const wishes = (draft.wishes ?? []).filter((wish) => wish.message.trim());
   const message = draft.message.trim() || "A Christmas wish, written just for you.";
-  const sender = draft.senderName.trim() || "With love";
+  const sender = signOff(draft.senderName);
   const rolled = phase === "rolled";
 
   return (

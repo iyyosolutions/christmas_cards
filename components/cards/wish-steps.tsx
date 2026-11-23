@@ -1,5 +1,6 @@
 "use client";
 
+import { signOff } from "@/lib/sign-off";
 import { useEffect, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { CardWish } from "@/lib/types";
@@ -47,7 +48,7 @@ export function WishSteps({
           <p className={messageClassName} style={messageStyle}>
             {wish.message}
           </p>
-          <p className={senderClassName}>{wish.senderName.trim() || "With love"}</p>
+          <p className={senderClassName}>{signOff(wish.senderName)}</p>
         </motion.div>
       </AnimatePresence>
       {wishes.length > 1 ? (

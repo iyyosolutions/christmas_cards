@@ -107,8 +107,8 @@ export async function saveCard(input: {
         ? (parsed.data.wishes ?? []).map((wish) => wish.message).join("\n\n")
         : parsed.data.message,
       sender_name: parsed.data.wishMode === "personal"
-        ? parsed.data.wishes?.[0]?.senderName || "With love"
-        : parsed.data.senderName || "With love",
+        ? parsed.data.wishes?.[0]?.senderName || "Made with love"
+        : parsed.data.senderName || "Made with love",
       card_image_url: cardImageUrl,
       share_token: token,
       is_public: true,
@@ -193,8 +193,8 @@ export async function updateCard(id: string, input: {
         ? (parsed.data.wishes ?? []).map((wish) => wish.message).join("\n\n")
         : parsed.data.message,
       sender_name: parsed.data.wishMode === "personal"
-        ? parsed.data.wishes?.[0]?.senderName || "With love"
-        : parsed.data.senderName || "With love",
+        ? parsed.data.wishes?.[0]?.senderName || "Made with love"
+        : parsed.data.senderName || "Made with love",
       card_image_url: cardImageUrl,
       design_options: {
         wishMode: parsed.data.wishMode,

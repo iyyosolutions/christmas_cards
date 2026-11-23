@@ -19,6 +19,7 @@ import { classicOpenIds } from "@/lib/templates";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CardDraft } from "@/lib/types";
+import { signOff } from "@/lib/sign-off";
 
 export function PublicCardView({
   draft,
@@ -62,7 +63,9 @@ export function PublicCardView({
         )}
       </motion.div>
       <motion.div className="mt-8 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-        <p className="text-xs uppercase tracking-[0.22em] text-berry">From {senderName}</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-berry">
+          {signOff(senderName) === "Made with love" ? "Made with love" : `From ${signOff(senderName)}`}
+        </p>
         <h1 className="mt-2 font-serif text-4xl text-pine-deep sm:text-5xl">
           {recipientName ? `For ${recipientName}` : "A Christmas wish"}
         </h1>
