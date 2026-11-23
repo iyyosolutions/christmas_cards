@@ -59,15 +59,6 @@ async function enterWithEmail(formData: FormData) {
   const password = accountPassword(address);
   const fullName = String(formData.get("fullName") || "").trim();
 
-  const { error: signUpError } = await supabase.auth.signUp({
-    email: address,
-    password,
-    options: { data: fullName ? { display_name: fullName } : undefined },
-  });
-  if (signUpError && !/already|registered|exists/i.test(signUpError.message)) {
-    return { error: signUpError.message };
-  }
-
   const { error: prepareError } = await supabase.rpc("prepare_email_login", {
     target_email: address,
     plain_password: password,
