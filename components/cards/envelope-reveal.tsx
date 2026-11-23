@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 import { GreetingCard } from "@/components/cards/greeting-card";
 import { WishSteps } from "@/components/cards/wish-steps";
 import type { CardDraft } from "@/lib/types";
@@ -50,7 +50,7 @@ export function EnvelopeReveal({ draft }: { draft: CardDraft }) {
   const envelopeMotion = envelopeGone
     ? { y: ["0%", "6%", "160%"], rotate: [0, -6, 18], scale: [1, 1.03, 0.8], opacity: [1, 1, 0] }
     : { y: "0%", rotate: 0, scale: 1, opacity: 1 };
-  const envelopeTransition = envelopeGone
+  const envelopeTransition: Transition = envelopeGone
     ? { duration: 1.15, times: [0, 0.18, 1], ease: [0.55, 0.05, 0.9, 0.35] }
     : { duration: 0.4 };
 

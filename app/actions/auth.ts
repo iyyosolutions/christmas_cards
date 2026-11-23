@@ -35,12 +35,12 @@ export async function signIn(formData: FormData) {
   return enterWithEmail(formData);
 }
 
-export async function requestPasswordReset() {
-  return { message: "There is no password. Enter your email to open your cards." };
+export async function requestPasswordReset(_formData?: FormData) {
+  return { error: undefined, message: "There is no password. Enter your email to open your cards." };
 }
 
-export async function updatePassword() {
-  return { message: "There is no password. Enter your email to open your cards." };
+export async function updatePassword(_formData?: FormData) {
+  return { error: "There is no password. Enter your email to open your cards.", message: undefined };
 }
 
 async function enterWithEmail(formData: FormData) {

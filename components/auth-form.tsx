@@ -14,16 +14,13 @@ export function AuthForm({
   nextPath?: string;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   async function onSubmit(formData: FormData) {
     setPending(true);
     setError(null);
-    setMessage(null);
     const result = mode === "signup" ? await signUp(formData) : await signIn(formData);
-    if (result?.error) setError(result.error);
-    if (result && "message" in result && result.message) setMessage(result.message);
+    if (result && "error" in result && result.error) setError(result.error);
     setPending(false);
   }
 
@@ -41,7 +38,6 @@ export function AuthForm({
       </div>
       <input type="hidden" name="next" value={nextPath} />
       {error && <p className="text-sm text-berry">{error}</p>}
-      {message && <p className="text-sm text-pine">{message}</p>}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Please wait…" : "Continue"}
       </Button>
