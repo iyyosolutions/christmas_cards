@@ -100,6 +100,7 @@ export async function saveCard(input: {
     .from("cards")
     .insert({
       user_id: user.id,
+      owner_email: user.email ?? null,
       template_id: template.id,
       recipient_name: parsed.data.wishMode === "personal" ? parsed.data.recipientName : null,
       message: parsed.data.wishMode === "personal"

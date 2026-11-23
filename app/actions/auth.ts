@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -7,133 +8,83 @@ import { REMEMBER_COOKIE } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
-const password = z.string().min(8, "Use at least 8 characters.");
+const emailSchema = z.string().trim().email("Enter a valid email address.");
 
-const signUpSchema = z
-  .object({
-    fullName: z.string().trim().min(2, "Enter your full name.").max(80),
-    email: z.string().email("Enter a valid email address."),
-    password,
-    confirmPassword: z.string(),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Those passwords do not match.",
-    path: ["confirmPassword"],
-  });
+function accountPassword(email: string) {
+  const secret = process.env.EMAIL_LOGIN_SECRET;
+  if (!secret) throw new Error("EMAIL_LOGIN_SECRET is missing.");
+  return createHash("sha256").update(`${secret}:${email}`).digest("base64url");
+}
 
-const signInSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
-  password,
-});
-
-async function setRemember(remember: boolean) {
+async function setRemember() {
   const cookieStore = await cookies();
-  cookieStore.set(REMEMBER_COOKIE, remember ? "1" : "0", {
+  cookieStore.set(REMEMBER_COOKIE, "1", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     secure: process.env.NODE_ENV === "production",
-    ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
+    maxAge: 60 * 60 * 24 * 30,
   });
 }
 
 export async function signUp(formData: FormData) {
-  const parsed = signUpSchema.safeParse({
-    fullName: formData.get("fullName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form." };
-  if (!isSupabaseConfigured()) {
-    return { error: "Add your Supabase keys to .env.local before creating accounts." };
-  }
-
-  await setRemember(true);
-  const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-      data: { display_name: parsed.data.fullName },
-    },
-  });
-
-  if (error) return { error: error.message };
-  if (data.session) redirect("/templates");
-  return {
-    message: "Check your inbox and open the verification link. You can sign in after your email is confirmed.",
-  };
+  return enterWithEmail(formData);
 }
 
 export async function signIn(formData: FormData) {
-  const parsed = signInSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form." };
+  return enterWithEmail(formData);
+}
+
+export async function requestPasswordReset() {
+  return { message: "There is no password. Enter your email to open your cards." };
+}
+
+export async function updatePassword() {
+  return { message: "There is no password. Enter your email to open your cards." };
+}
+
+async function enterWithEmail(formData: FormData) {
+  const email = emailSchema.safeParse(formData.get("email"));
+  if (!email.success) return { error: email.error.issues[0]?.message ?? "Enter a valid email address." };
   if (!isSupabaseConfigured()) {
-    return { error: "Add your Supabase keys to .env.local before signing in." };
+    return { error: "Add your Supabase keys to .env.local before using email sign-in." };
+  }
+  if (!process.env.EMAIL_LOGIN_SECRET) {
+    return { error: "Email sign-in is not configured on the server." };
   }
 
-  await setRemember(formData.get("remember") === "on");
+  await setRemember();
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
+  const address = email.data.toLowerCase();
+  const password = accountPassword(address);
+  const fullName = String(formData.get("fullName") || "").trim();
+
+  const { error: signUpError } = await supabase.auth.signUp({
+    email: address,
+    password,
+    options: { data: fullName ? { display_name: fullName } : undefined },
   });
-  if (error) return { error: error.message };
+  if (signUpError && !/already|registered|exists/i.test(signUpError.message)) {
+    return { error: signUpError.message };
+  }
+
+  const { error: prepareError } = await supabase.rpc("prepare_email_login", {
+    target_email: address,
+    plain_password: password,
+  });
+  if (prepareError) return { error: prepareError.message };
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email: address, password });
+  if (signInError) return { error: signInError.message };
+
+  if (fullName) {
+    await supabase.auth.updateUser({ data: { display_name: fullName } });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("profiles").update({ full_name: fullName, email: address }).eq("id", user.id);
+    }
+  }
 
   const next = String(formData.get("next") || "/templates");
   redirect(next.startsWith("/") ? next : "/templates");
-}
-
-export async function requestPasswordReset(formData: FormData) {
-  if (!isSupabaseConfigured()) {
-    return { error: "Add your Supabase keys to .env.local before resetting a password." };
-  }
-
-  const email = z.string().email("Enter a valid email address.").safeParse(formData.get("email"));
-  if (!email.success) return { error: email.error.issues[0]?.message ?? "Check the email." };
-
-  const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const { error } = await supabase.auth.resetPasswordForEmail(email.data, {
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
-  });
-  if (error) return { error: error.message };
-  return { message: "If that email has an account, a reset link is on its way." };
-}
-
-const newPasswordSchema = z
-  .object({
-    password,
-    confirmPassword: z.string(),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Those passwords do not match.",
-  });
-
-export async function updatePassword(formData: FormData) {
-  if (!isSupabaseConfigured()) {
-    return { error: "Add your Supabase keys to .env.local before choosing a new password." };
-  }
-
-  const parsed = newPasswordSchema.safeParse({
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form." };
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Open the reset link from your email, then choose a new password." };
-
-  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
-  if (error) return { error: error.message };
-  redirect("/templates");
 }

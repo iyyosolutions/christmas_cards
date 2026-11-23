@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { WishSteps } from "@/components/cards/wish-steps";
 import type { CardDraft } from "@/lib/types";
 
 const tiles = Array.from({ length: 12 }, (_, index) => ({
@@ -40,16 +41,16 @@ export function FlakeTiles({ draft }: { draft: CardDraft }) {
         <div className="absolute inset-x-[8%] bottom-[4%] top-[76%] flex flex-col items-center justify-center overflow-hidden px-2 text-center text-[#9b2d3a]">
           {draft.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={draft.photoUrl} alt="" className="mb-1 max-h-10 w-full rounded-lg object-cover" />
+            <img src={draft.photoUrl} alt="" className="mx-auto mb-1 h-10 w-10 rounded-md object-contain" />
           ) : null}
           {greeting ? <p className="font-serif text-lg leading-none">{greeting}</p> : null}
           {wishes.length > 0 ? (
-            wishes.map((wish, index) => (
-              <div key={`${wish.senderName}-${index}`} className="mt-1">
-                <p className="font-serif text-xs leading-snug">{wish.message}</p>
-                <p className="text-[9px] uppercase tracking-[0.16em]">{wish.senderName.trim() || "With love"}</p>
-              </div>
-            ))
+            <WishSteps
+              wishes={wishes}
+              playing={open}
+              messageClassName="font-serif text-xs leading-snug"
+              senderClassName="text-[9px] uppercase tracking-[0.16em]"
+            />
           ) : (
             <>
               <p className="font-serif text-sm leading-snug">{message}</p>

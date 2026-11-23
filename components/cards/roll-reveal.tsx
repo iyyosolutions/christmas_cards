@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GreetingCard } from "@/components/cards/greeting-card";
+import { WishSteps } from "@/components/cards/wish-steps";
 import type { CardDraft } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -60,17 +61,17 @@ export function RollReveal({ draft }: { draft: CardDraft }) {
         <div className={cn("absolute inset-0 flex flex-col justify-between overflow-hidden rounded-[18px] bg-[#fffaf2] px-5 py-6 [transform:rotateY(180deg)] [backface-visibility:hidden]")}>
           {draft.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={draft.photoUrl} alt="" className="mb-3 max-h-24 w-full rounded-xl object-cover" />
+            <img src={draft.photoUrl} alt="" className="mb-3 h-16 w-16 rounded-md object-contain" />
           ) : null}
           {greeting ? <p className="font-serif text-2xl text-[#7a2430]">{greeting}</p> : <span />}
           {wishes.length > 0 ? (
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-              {wishes.map((wish, index) => (
-                <div key={`${wish.senderName}-${index}`}>
-                  <p className="font-serif text-base leading-snug text-[#2c2824]">{wish.message}</p>
-                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#7a2430]">{wish.senderName.trim() || "With love"}</p>
-                </div>
-              ))}
+              <WishSteps
+                wishes={wishes}
+                playing={showBack}
+                messageClassName="font-serif text-base leading-snug text-[#2c2824]"
+                senderClassName="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#7a2430]"
+              />
             </div>
           ) : (
             <>

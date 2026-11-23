@@ -31,6 +31,7 @@ create table if not exists public.cards (
   share_token text not null unique,
   is_public boolean not null default true,
   design_options jsonb not null default '{}'::jsonb,
+  owner_email text,
   created_at timestamptz not null default now()
 );
 
@@ -44,6 +45,7 @@ create table if not exists public.card_shares (
 );
 
 create index if not exists cards_user_id_idx on public.cards (user_id);
+create index if not exists cards_owner_email_idx on public.cards (owner_email);
 create index if not exists cards_created_at_idx on public.cards (user_id, created_at desc);
 create index if not exists cards_share_token_idx on public.cards (share_token);
 create index if not exists templates_active_idx on public.templates (is_active, category);

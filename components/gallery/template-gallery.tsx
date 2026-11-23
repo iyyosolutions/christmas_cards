@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { CardComposer } from "@/components/cards/card-composer";
 import { EnvelopeReveal } from "@/components/cards/envelope-reveal";
@@ -29,6 +30,9 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
   const [chosen, setChosen] = useState<GalleryTemplate | null>(null);
   const [preview, setPreview] = useState<GalleryTemplate | null>(null);
   const [mode, setMode] = useState<"general" | "personal" | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   function open(template: GalleryTemplate) {
     if (!signedIn) {
@@ -61,23 +65,34 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
       </div>
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={`Preview ${preview.name}`}>
-          <div className="notebook w-full max-w-lg rounded-2xl p-4 text-ink sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={`Preview ${preview.name}`} onClick={() => setPreview(null)}>
+          <div className="notebook w-full max-w-lg rounded-2xl p-4 text-ink sm:p-6" onClick={(event) => event.stopPropagation()}>
             <div className="mb-4 flex items-start justify-between gap-3">
-              <p className="display text-3xl text-[#7eb8b2] sm:text-4xl">{preview.name}</p>
-              <Button type="button" variant="ghost" onClick={() => setPreview(null)}>Close</Button>
+              <p className="display min-w-0 text-3xl text-[#7eb8b2] sm:text-4xl">{preview.name}</p>
+              <Button type="button" variant="ghost" className="relative z-10 shrink-0" onClick={() => setPreview(null)}>Close</Button>
             </div>
             <SentPreview key={preview.design} design={preview.design} />
+            <button
+              type="button"
+              onClick={() => {
+                const template = preview;
+                setPreview(null);
+                open(template);
+              }}
+              className={`${handFont.className} mx-auto mt-4 block -rotate-1 bg-white px-5 py-2 text-3xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}
+            >
+              Use this
+            </button>
           </div>
         </div>
       )}
 
       {chosen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={chosen.name}>
-          <div className="notebook max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl p-4 text-ink sm:p-6">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <p className="display text-3xl text-[#7eb8b2] sm:text-4xl">{chosen.name}</p>
-              <Button type="button" variant="ghost" onClick={() => setChosen(null)}>Close</Button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={chosen.name} onClick={() => setChosen(null)}>
+          <div className="notebook max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl p-4 text-ink sm:p-6" onClick={(event) => event.stopPropagation()}>
+            <div className="sticky top-0 z-20 mb-4 flex items-start justify-between gap-3 bg-[#efe6d6]">
+              <p className="display min-w-0 text-3xl text-[#7eb8b2] sm:text-4xl">{chosen.name}</p>
+              <Button type="button" variant="ghost" className="relative z-10 shrink-0" onClick={() => setChosen(null)}>Close</Button>
             </div>
             {mode === null ? (
               <div>

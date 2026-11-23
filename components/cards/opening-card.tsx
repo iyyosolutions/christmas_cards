@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GreetingCard } from "@/components/cards/greeting-card";
+import { WishSteps } from "@/components/cards/wish-steps";
 import type { CardDraft } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -41,17 +42,18 @@ export function OpeningCard({
         <div className={cn("absolute inset-0 flex flex-col justify-between overflow-hidden rounded-[28px] bg-[#fff9f0] px-4 py-5 shadow-[0_18px_40px_rgba(18,61,43,0.12)] sm:px-7 sm:py-8", align)}>
           {draft.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={draft.photoUrl} alt="" className="mb-3 max-h-28 w-full rounded-xl object-cover" />
+            <img src={draft.photoUrl} alt="" className="mb-3 h-16 w-16 rounded-md object-contain" />
           ) : null}
           {greeting ? <p className={cn("text-3xl leading-none text-[#123d2b]", font)} style={color ? { color } : undefined}>{greeting}</p> : <span />}
           {wishes.length > 0 ? (
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-              {wishes.map((wish, index) => (
-                <div key={`${wish.senderName}-${index}`}>
-                  <p className={cn("text-base leading-snug text-[#241c16]/85", font)} style={color ? { color } : undefined}>{wish.message}</p>
-                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#c62828]">{wish.senderName.trim() || "With love"}</p>
-                </div>
-              ))}
+              <WishSteps
+                wishes={wishes}
+                playing={open}
+                messageClassName={cn("text-base leading-snug text-[#241c16]/85", font)}
+                senderClassName="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#c62828]"
+                messageStyle={color ? { color } : undefined}
+              />
             </div>
           ) : (
             <>

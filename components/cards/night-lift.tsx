@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { WishSteps } from "@/components/cards/wish-steps";
 import type { CardDraft } from "@/lib/types";
 
 export function NightLift({ draft }: { draft: CardDraft }) {
@@ -35,16 +36,16 @@ export function NightLift({ draft }: { draft: CardDraft }) {
         <div className="absolute inset-x-[12%] top-[22%] bottom-[22%] flex flex-col items-center justify-center overflow-hidden px-2 text-center text-[#f4efe4]">
           {draft.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={draft.photoUrl} alt="" className="mb-2 max-h-16 w-full rounded-lg object-cover" />
+            <img src={draft.photoUrl} alt="" className="mx-auto mb-2 h-14 w-14 rounded-md object-contain" />
           ) : null}
           {greeting ? <p className="font-serif text-xl">{greeting}</p> : null}
           {wishes.length > 0 ? (
-            wishes.map((wish, index) => (
-              <div key={`${wish.senderName}-${index}`} className="mt-2">
-                <p className="font-serif text-sm leading-snug">{wish.message}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#f4efe4]/75">{wish.senderName.trim() || "With love"}</p>
-              </div>
-            ))
+            <WishSteps
+              wishes={wishes}
+              playing={open}
+              messageClassName="font-serif text-sm leading-snug"
+              senderClassName="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#f4efe4]/75"
+            />
           ) : (
             <>
               <p className="font-serif text-base leading-snug">{message}</p>

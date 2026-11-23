@@ -12,7 +12,7 @@ export default async function LoginPage({
         <p className="text-xs uppercase tracking-[0.24em] text-berry">Welcome back</p>
         <h1 className="mt-3 font-serif text-5xl text-pine-deep">Sign in to your cards.</h1>
         <p className="mt-4 text-ink/70">
-          Use the email and password you confirmed. New accounts stay closed until the verification email is opened.
+          Enter your email and continue. No password and no email link. Your cards stay on that address.
         </p>
         {params.error === "confirm" && (
           <p className="mt-4 text-sm text-berry">That confirmation link could not be completed. Request a new one by signing up again, or try signing in.</p>
