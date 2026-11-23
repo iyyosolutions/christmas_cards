@@ -39,23 +39,23 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="relative z-20 px-4 pb-2 pt-10 text-ink sm:px-10 sm:pt-12">
-      <nav className="mb-5 flex flex-wrap items-center gap-3 sm:absolute sm:right-8 sm:top-8 sm:mb-0">
-        <Link href="/templates" className={`${handFont.className} -rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Designs</Link>
+    <header className="relative z-20 px-3 pb-1 pt-8 text-ink sm:px-10 sm:pt-12">
+      <nav className="mb-4 flex flex-wrap items-center gap-2 sm:absolute sm:right-8 sm:top-8 sm:mb-0 sm:gap-3">
+        <Link href="/templates" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:-rotate-2 sm:text-2xl`}>Designs</Link>
         {email ? (
           <>
-            <Link href="/cards" className={`${handFont.className} rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Cards</Link>
-            {admin && <Link href="/admin" className={`${handFont.className} -rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Admin</Link>}
-            <button type="button" className={`${handFont.className} rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`} onClick={signOut}>Out</button>
+            <Link href="/cards" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:rotate-1 sm:text-2xl`}>Cards</Link>
+            {admin && <Link href="/admin" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:-rotate-1 sm:text-2xl`}>Admin</Link>}
+            <button type="button" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:rotate-2 sm:text-2xl`} onClick={signOut}>Out</button>
           </>
         ) : (
           <>
-            <Link href="/login" className={`${handFont.className} rotate-1 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Sign in</Link>
-            <Link href="/signup" className={`${handFont.className} rotate-2 bg-white px-3 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}>Join</Link>
+            <Link href="/login" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:rotate-1 sm:text-2xl`}>Sign in</Link>
+            <Link href="/signup" className={`${handFont.className} bg-white px-3 py-1 text-xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:rotate-2 sm:text-2xl`}>Join</Link>
           </>
         )}
       </nav>
-      <Link href="/templates" className="display block text-5xl leading-[0.82] text-[#7eb8b2] sm:text-7xl">
+      <Link href="/templates" className="display block max-w-full text-[2.75rem] leading-[0.85] text-[#7eb8b2] sm:text-7xl">
         Send
         <br />
         a wish

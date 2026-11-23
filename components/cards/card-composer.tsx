@@ -165,7 +165,7 @@ export function CardComposer({
       <Button type="button" onClick={onCreate} disabled={pending}>
         {pending ? "Saving…" : cardId ? "Save changes" : "Create card"}
       </Button>
-      <div ref={cardRef} className="pointer-events-none fixed top-0 w-[480px]" style={{ left: "-100vw" }} aria-hidden>
+      <div ref={cardRef} className="pointer-events-none fixed top-0 left-[-2400px] w-[480px]" aria-hidden>
         <GreetingCard draft={{ templateId: designId, recipientName: "", message: "", senderName: "" }} />
       </div>
     </div>

@@ -56,7 +56,7 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
               <button
                 type="button"
                 onClick={() => setPreview(template)}
-                className={`${handFont.className} mx-auto mt-3 block rotate-1 bg-white px-4 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}
+                className={`${handFont.className} mx-auto mt-3 mb-2 block bg-white px-4 py-1 text-2xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:rotate-1`}
               >
                 Preview
               </button>
@@ -65,7 +65,7 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
       </div>
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={`Preview ${preview.name}`} onClick={() => setPreview(null)}>
+        <div className="fixed inset-0 z-[80] flex items-end justify-center overflow-y-auto bg-[#2c313b]/75 p-3 pb-16 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={`Preview ${preview.name}`} onClick={() => setPreview(null)}>
           <div className="notebook w-full max-w-lg rounded-2xl p-4 text-ink sm:p-6" onClick={(event) => event.stopPropagation()}>
             <div className="mb-4 flex items-start justify-between gap-3">
               <p className="display min-w-0 text-3xl text-[#7eb8b2] sm:text-4xl">{preview.name}</p>
@@ -79,7 +79,7 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
                 setPreview(null);
                 open(template);
               }}
-              className={`${handFont.className} mx-auto mt-4 block -rotate-1 bg-white px-5 py-2 text-3xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)]`}
+              className={`${handFont.className} mx-auto mt-4 mb-2 block bg-white px-5 py-2 text-3xl leading-none text-[#2c2824] shadow-[3px_4px_0_rgba(60,50,40,0.12)] sm:-rotate-1`}
             >
               Use this
             </button>
@@ -88,8 +88,8 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
       )}
 
       {chosen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2c313b]/75 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label={chosen.name} onClick={() => setChosen(null)}>
-          <div className="notebook max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl p-4 text-ink sm:p-6" onClick={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[#2c313b]/75 p-3 pb-16 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={chosen.name} onClick={() => setChosen(null)}>
+          <div className="notebook max-h-[calc(100dvh-5.5rem)] w-full max-w-lg overflow-y-auto rounded-2xl p-4 pb-6 text-ink sm:max-h-[88vh] sm:p-6" onClick={(event) => event.stopPropagation()}>
             <div className="sticky top-0 z-20 mb-4 flex items-start justify-between gap-3 bg-[#efe6d6]">
               <p className="display min-w-0 text-3xl text-[#7eb8b2] sm:text-4xl">{chosen.name}</p>
               <Button type="button" variant="ghost" className="relative z-10 shrink-0" onClick={() => setChosen(null)}>Close</Button>
@@ -98,10 +98,10 @@ export function TemplateGallery({ templates, signedIn }: { templates: GalleryTem
               <div>
                 <p className="text-sm text-ink/70">Who is this card for?</p>
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-6">
-                  <button type="button" onClick={() => setMode("personal")} className={`${handFont.className} min-h-28 -rotate-2 bg-white px-2 py-4 text-center text-2xl leading-none text-[#2c2824] shadow-[4px_6px_0_rgba(60,50,40,0.12)] hover:rotate-0 sm:px-4 sm:text-3xl`}>
+                  <button type="button" onClick={() => setMode("personal")} className={`${handFont.className} min-h-28 bg-white px-2 py-4 text-center text-xl leading-snug text-[#2c2824] shadow-[4px_6px_0_rgba(60,50,40,0.12)] sm:-rotate-2 sm:px-4 sm:text-3xl sm:leading-none`}>
                     Personalised for one person
                   </button>
-                  <button type="button" onClick={() => setMode("general")} className={`${handFont.className} min-h-28 rotate-2 bg-white px-2 py-4 text-center text-2xl leading-none text-[#2c2824] shadow-[4px_6px_0_rgba(60,50,40,0.12)] hover:rotate-0 sm:px-4 sm:text-3xl`}>
+                  <button type="button" onClick={() => setMode("general")} className={`${handFont.className} min-h-28 bg-white px-2 py-4 text-center text-xl leading-snug text-[#2c2824] shadow-[4px_6px_0_rgba(60,50,40,0.12)] sm:rotate-2 sm:px-4 sm:text-3xl sm:leading-none`}>
                     A general wish
                   </button>
                 </div>

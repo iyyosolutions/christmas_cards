@@ -44,7 +44,7 @@ export function CardGrid({ cards }: { cards: DashboardCard[] }) {
               {card.recipient_name ? card.recipient_name : "General wish"}
             </h3>
             <p className="text-sm text-ink/50">{new Date(card.created_at).toLocaleDateString()}</p>
-            <div className="mt-4 flex flex-wrap gap-2 [&>*]:min-h-11">
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap [&>*]:min-h-11">
               <Button type="button" size="sm" variant="outline" onClick={() => setPreview(card)}>Preview</Button>
               <Button type="button" size="sm" variant="outline" onClick={() => copy(card.share_token)}>Copy link</Button>
               <Link href={`/edit/${card.id}`} className={cn(buttonVariants({ size: "sm", variant: "outline" }))}>Edit</Link>
@@ -55,7 +55,7 @@ export function CardGrid({ cards }: { cards: DashboardCard[] }) {
         ))}
       </div>
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-pine-deep/70 p-4" role="dialog" aria-modal="true" aria-label="Card preview">
+        <div className="fixed inset-0 z-[80] flex items-end justify-center overflow-y-auto bg-pine-deep/70 p-3 pb-16 sm:items-center" role="dialog" aria-modal="true" aria-label="Card preview">
           <div className="w-full max-w-sm">
             <OpeningCard draft={draftFor(preview)} auto />
             <div className="mt-4 flex flex-wrap justify-between gap-2 text-cream">
